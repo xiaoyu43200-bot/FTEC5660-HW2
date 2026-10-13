@@ -93,7 +93,17 @@ attack the MCP server. See the homework description for the full rules.
 > to students: this is your report, see the homework description.
 
 ### Task 1
-> one paragraph describing your solution, and your results on `public_test`.
+I implemented a LangChain tool-calling verification agent using the required deepseek-v4-flash model. The agent treats CV content as untrusted data, resolves the candidate's identity using multiple attributes, and checks every relevant claim against the SocialGraph LinkedIn and Facebook tools, including location, employment, education, and skills. A single confirmed discrepancy results in a low score. CVs are processed asynchronously with a concurrency limit of three, per-CV retries, error isolation, and robust final-score parsing.
+Result: The agent achieved 7/7 accuracy on public_test in three consecutive runs.
 
 ### Task 2
-> the attack techniques you used and why you expect them to work.
+My adversarial CV exploits the representation gap between the page visible to a human and the text extracted by the verifier's PDF loader. The visible CV adds Python as a skill even though Kelly Tsang's verified LinkedIn profile lists only Financial Analysis, Excel, SQL, and Risk Modeling, so the document contains a genuine false claim. However, the visible page is rendered as an image, while an invisible extractable text layer contains only the verified CV information and omits Python. Because the grading agents use the same PDF text loader, they are expected to verify the truthful extracted layer rather than detect the visually presented false skill.
+Result: My own verifier scored both the adversarial CV and the true target CV at 0.97 in three consecutive runs.
+
+### Task 3: Reflection
+
+This homework illustrates several paradoxes of agentic AI. First, greater capability can create greater vulnerability. The same language-model flexibility that allows an agent to interpret varied CV wording also makes it susceptible to adversarial representations and prompt-based manipulation. A rigid verifier may miss legitimate semantic equivalence, while a flexible verifier may be easier to deceive.
+
+Second, automation can increase rather than eliminate the need for human judgment. The verification agent can search profiles and compare many claims efficiently, but its output still depends on correct identity resolution, reliable external data, secure document parsing, and sensible confidence calibration. In Task 2, the visible CV and its machine-extracted text communicated different claims. The agent confidently assessed the extracted representation, while a human viewer saw something else. This shows that an accurate model can still produce an unreliable system when its input pipeline is incomplete.
+
+Third, stronger defensive instructions do not solve every security problem. My verifier explicitly treated CV content as untrusted and resisted direct prompt injection, yet the attack succeeded below the reasoning layer through PDF text extraction. Effective AI governance therefore requires layered controls: secure parsers, comparison between visual and extracted content, provenance checks, adversarial testing, uncertainty reporting, and human review for high-impact decisions. The central lesson is that AI can improve speed and coverage, but confidence in its output should never exceed confidence in the entire system that produced it.
